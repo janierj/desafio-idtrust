@@ -1,0 +1,17 @@
+version: '2'
+services:
+  desafio-app:
+    image: janierj/desafio-idtrust
+    container_name: desafio-app
+    depends_on:
+      - desafio-postgres
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://desafio-postgres:5432/desafio_idtrust
+#      - QUANDL_API_KEY=
+    ports:
+      - 8080:8080
+  desafio-postgres:
+    extends:
+      file: postgres.yml
+      service: desafio-postgres

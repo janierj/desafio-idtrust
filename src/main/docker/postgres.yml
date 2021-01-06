@@ -1,0 +1,11 @@
+version: '2'
+services:
+  desafio-postgres:
+    image: postgres:13.1
+    container_name: desafio-postgres
+    environment:
+      - POSTGRES_DB=desafio_idtrust
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    ports:
+      - 5432:5432
