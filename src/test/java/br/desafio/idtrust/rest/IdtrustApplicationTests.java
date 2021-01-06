@@ -5,6 +5,7 @@ import br.desafio.idtrust.entity.Request;
 import br.desafio.idtrust.entity.enumeration.Culture;
 import br.desafio.idtrust.entity.enumeration.Currency;
 import br.desafio.idtrust.repository.RequestRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -72,6 +75,9 @@ class IdtrustApplicationTests {
     @Test
     @Transactional
     public void getValorCotacaoFromDatabaseCache() throws Exception {
+        Optional<Request> cotacaoOptional = requestRepository.findOneByCultureAndDate(DEFAULT_CULTURE, DEFAULT_DATE);
+        assertThat(cotacaoOptional).isEmpty();
+
         requestRepository.saveAndFlush(request);
         restItemMockMvc.perform(get("/api/cotacao/" + DEFAULT_CULTURE + "/" + DEFAULT_DATE))
                 .andExpect(status().isOk())
@@ -92,7 +98,7 @@ class IdtrustApplicationTests {
     }
 
     /**
-     * Verificar que o valor é calculado fazendo as requisções as APIs.
+     * Verificar que o valor é calculado fazendo as requisções as APIs e que a cotação ficou salva no banco
      *
      * @throws Exception
      */
@@ -103,5 +109,12 @@ class IdtrustApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.valueOf("text/plain;charset=UTF-8")))
                 .andExpect(content().string(Currency.BRL.toString() + " " + request.getValor()));
+
+        Optional<Request> cotacaoOptional = requestRepository.findOneByCultureAndDate(DEFAULT_CULTURE, DEFAULT_DATE);
+        assertThat(cotacaoOptional).isNotEmpty();
+        Request request = cotacaoOptional.get();
+        assertThat(request.getValor()).isEqualTo(DEFAULT_VALOR);
+        assertThat(request.getDate()).isEqualTo(DEFAULT_DATE);
+        assertThat(request.getCulture()).isEqualTo(DEFAULT_CULTURE);
     }
 }
